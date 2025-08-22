@@ -1,0 +1,158 @@
+INFO: set random seed: 1111
+INFO: Using device : cuda
+	GPU ID is [7],using 1 device
+	device name:NVIDIA GeForce RTX 4090
+INFO: ============ Start  train ==============
+INFO: Creating total train dataset with 13598 examples
+INFO: Creating factual train dataset with 13598 examples
+INFO: Creating total val dataset with 3626 examples
+INFO: Creating factual val dataset with 3626 examples
+INFO: Creating total val_3d dataset with 8060 examples
+INFO: Creating factual val_3d dataset with 8060 examples
+INFO: Train Data: Labeled data is: <1359>, Total data is: 13598
+INFO: Starting training:
+	start_time:     2025-08-22 21:25:08
+	base_dir:       res-t2_t1ce-BraTs-seed-2-OnlySupCMCNetWithSigmoid-10%_seed_1111
+	data_path:      /mnt/HDD2/dat/med/semi-CML-public/dataset/BraTS_slice
+	train_list:     randP1_slice_nidus_train.list
+	val_list:       randP1_slice_nidus_val.list
+	img_mode:       t2_t1ce
+	lr_scheduler:   warmupMultistep
+	max_epoch:      81
+	batch_size:     24
+	labeled_bs:     20
+	labeled_rate:   0.1
+	unsup_epoch:    0
+	images_rate:    1
+	base_lr:        0.006
+	step_num_lr:    4
+	weight_decay:   0.0004
+	optim_name:     adam
+	loss_name:      bce
+	bce_w:          10.0
+	dice_w:         7.0
+	consistency:    1.0
+	cons_ramp_type: sig_ram
+	nce_weight:     3.5
+	sur_siml:       dice
+	pHead_sur:      set_false
+	M2_epoch:       51
+	T_epoch:        10
+	T_num:          4
+	bma_update_pool_num:6
+	M2_epoch_all:   0
+	m1_alpha:       0.1
+	m2_alpha:       0.1
+	teach_m2_WP_epoch:3
+	start_fusion_epoch:82
+	will_eval:      1
+	val_3d_interval:4
+	Net Name:		CMCNet
+	Input Channel:	1
+	Classes Num:	1
+	Images Shape:	160*160
+INFO: valid_dice_m1_3d:0.6216,valid_dice_m2_3d:0.3566
+INFO: Epoch:[000/081], Train Loss: 1.4574 , Sup Loss 1.4574 , Val Loss: 1.3663, Train Dice: mode1 0.5219 mode2 0.3523 ,LR: 0.001500
+INFO: Epoch:[001/081], Train Loss: 1.2406 , Sup Loss 1.2406 , Val Loss: 1.2361, Train Dice: mode1 0.5736 mode2 0.4195 ,LR: 0.002250
+INFO: Epoch:[002/081], Train Loss: 1.1402 , Sup Loss 1.1402 , Val Loss: 1.5206, Train Dice: mode1 0.6021 mode2 0.4484 ,LR: 0.003000
+INFO: Epoch:[003/081], Train Loss: 1.1165 , Sup Loss 1.1165 , Val Loss: 1.5160, Train Dice: mode1 0.5970 mode2 0.4761 ,LR: 0.003750
+INFO: valid_dice_m1_3d:0.0733,valid_dice_m2_3d:0.4265
+INFO: Epoch:[004/081], Train Loss: 1.1114 , Sup Loss 1.1114 , Val Loss: 1.4053, Train Dice: mode1 0.6017 mode2 0.4716 ,LR: 0.004500
+INFO: Epoch:[005/081], Train Loss: 1.0995 , Sup Loss 1.0995 , Val Loss: 1.3103, Train Dice: mode1 0.6056 mode2 0.4899 ,LR: 0.005250
+INFO: Epoch:[006/081], Train Loss: 1.0886 , Sup Loss 1.0886 , Val Loss: 1.3234, Train Dice: mode1 0.6017 mode2 0.5167 ,LR: 0.006000
+INFO: Epoch:[007/081], Train Loss: 1.0797 , Sup Loss 1.0797 , Val Loss: 1.1343, Train Dice: mode1 0.6228 mode2 0.5126 ,LR: 0.006000
+INFO: valid_dice_m1_3d:0.4478,valid_dice_m2_3d:0.4842
+INFO: Epoch:[008/081], Train Loss: 1.0671 , Sup Loss 1.0671 , Val Loss: 1.2281, Train Dice: mode1 0.6123 mode2 0.5441 ,LR: 0.006000
+INFO: Epoch:[009/081], Train Loss: 1.0463 , Sup Loss 1.0463 , Val Loss: 1.1383, Train Dice: mode1 0.6351 mode2 0.5592 ,LR: 0.006000
+INFO: Epoch:[010/081], Train Loss: 1.0581 , Sup Loss 1.0581 , Val Loss: 1.1363, Train Dice: mode1 0.6114 mode2 0.5637 ,LR: 0.006000
+INFO: Epoch:[011/081], Train Loss: 1.0333 , Sup Loss 1.0333 , Val Loss: 1.2127, Train Dice: mode1 0.6462 mode2 0.5773 ,LR: 0.000600
+INFO: valid_dice_m1_3d:0.6127,valid_dice_m2_3d:0.5919
+INFO: Epoch:[012/081], Train Loss: 0.9856 , Sup Loss 0.9856 , Val Loss: 1.1609, Train Dice: mode1 0.6903 mode2 0.6270 ,LR: 0.000600
+INFO: Epoch:[013/081], Train Loss: 0.9589 , Sup Loss 0.9589 , Val Loss: 1.1319, Train Dice: mode1 0.7167 mode2 0.6574 ,LR: 0.000600
+INFO: Epoch:[014/081], Train Loss: 0.9470 , Sup Loss 0.9470 , Val Loss: 1.1784, Train Dice: mode1 0.7272 mode2 0.6695 ,LR: 0.000600
+INFO: Epoch:[015/081], Train Loss: 0.9457 , Sup Loss 0.9457 , Val Loss: 1.1058, Train Dice: mode1 0.7231 mode2 0.6742 ,LR: 0.000600
+INFO: valid_dice_m1_3d:0.6542,valid_dice_m2_3d:0.5644
+INFO: Epoch:[016/081], Train Loss: 0.9357 , Sup Loss 0.9357 , Val Loss: 1.1559, Train Dice: mode1 0.7331 mode2 0.6877 ,LR: 0.000600
+INFO: Epoch:[017/081], Train Loss: 0.9264 , Sup Loss 0.9264 , Val Loss: 1.1662, Train Dice: mode1 0.7429 mode2 0.6980 ,LR: 0.000600
+INFO: Epoch:[018/081], Train Loss: 0.9263 , Sup Loss 0.9263 , Val Loss: 1.1008, Train Dice: mode1 0.7412 mode2 0.6975 ,LR: 0.000600
+INFO: Epoch:[019/081], Train Loss: 0.9170 , Sup Loss 0.9170 , Val Loss: 1.1047, Train Dice: mode1 0.7498 mode2 0.7117 ,LR: 0.000600
+INFO: valid_dice_m1_3d:0.6261,valid_dice_m2_3d:0.5603
+INFO: Epoch:[020/081], Train Loss: 0.9129 , Sup Loss 0.9129 , Val Loss: 1.1886, Train Dice: mode1 0.7574 mode2 0.7130 ,LR: 0.000600
+INFO: Epoch:[021/081], Train Loss: 0.9108 , Sup Loss 0.9108 , Val Loss: 1.2234, Train Dice: mode1 0.7575 mode2 0.7147 ,LR: 0.000600
+INFO: Epoch:[022/081], Train Loss: 0.9047 , Sup Loss 0.9047 , Val Loss: 1.1667, Train Dice: mode1 0.7611 mode2 0.7245 ,LR: 0.000600
+INFO: Epoch:[023/081], Train Loss: 0.9032 , Sup Loss 0.9032 , Val Loss: 1.1533, Train Dice: mode1 0.7638 mode2 0.7266 ,LR: 0.000600
+INFO: valid_dice_m1_3d:0.6391,valid_dice_m2_3d:0.5426
+INFO: Epoch:[024/081], Train Loss: 0.9030 , Sup Loss 0.9030 , Val Loss: 1.1654, Train Dice: mode1 0.7645 mode2 0.7257 ,LR: 0.000600
+INFO: Epoch:[025/081], Train Loss: 0.8983 , Sup Loss 0.8983 , Val Loss: 1.1341, Train Dice: mode1 0.7681 mode2 0.7305 ,LR: 0.000600
+INFO: Epoch:[026/081], Train Loss: 0.8948 , Sup Loss 0.8948 , Val Loss: 1.1598, Train Dice: mode1 0.7704 mode2 0.7360 ,LR: 0.000600
+INFO: Epoch:[027/081], Train Loss: 0.8870 , Sup Loss 0.8870 , Val Loss: 1.1912, Train Dice: mode1 0.7773 mode2 0.7458 ,LR: 0.000060
+INFO: valid_dice_m1_3d:0.6828,valid_dice_m2_3d:0.5822
+INFO: Epoch:[028/081], Train Loss: 0.8774 , Sup Loss 0.8774 , Val Loss: 1.1504, Train Dice: mode1 0.7865 mode2 0.7588 ,LR: 0.000060
+INFO: Epoch:[029/081], Train Loss: 0.8675 , Sup Loss 0.8675 , Val Loss: 1.1388, Train Dice: mode1 0.7958 mode2 0.7709 ,LR: 0.000060
+INFO: Epoch:[030/081], Train Loss: 0.8636 , Sup Loss 0.8636 , Val Loss: 1.1462, Train Dice: mode1 0.8008 mode2 0.7754 ,LR: 0.000060
+INFO: Epoch:[031/081], Train Loss: 0.8601 , Sup Loss 0.8601 , Val Loss: 1.1368, Train Dice: mode1 0.8023 mode2 0.7816 ,LR: 0.000060
+INFO: valid_dice_m1_3d:0.6864,valid_dice_m2_3d:0.5907
+INFO: Epoch:[032/081], Train Loss: 0.8572 , Sup Loss 0.8572 , Val Loss: 1.1565, Train Dice: mode1 0.8062 mode2 0.7816 ,LR: 0.000060
+INFO: Epoch:[033/081], Train Loss: 0.8590 , Sup Loss 0.8590 , Val Loss: 1.1424, Train Dice: mode1 0.8017 mode2 0.7829 ,LR: 0.000060
+INFO: Epoch:[034/081], Train Loss: 0.8558 , Sup Loss 0.8558 , Val Loss: 1.1259, Train Dice: mode1 0.8069 mode2 0.7859 ,LR: 0.000060
+INFO: Epoch:[035/081], Train Loss: 0.8542 , Sup Loss 0.8542 , Val Loss: 1.1429, Train Dice: mode1 0.8085 mode2 0.7857 ,LR: 0.000060
+INFO: valid_dice_m1_3d:0.6944,valid_dice_m2_3d:0.5977
+INFO: Epoch:[036/081], Train Loss: 0.8518 , Sup Loss 0.8518 , Val Loss: 1.1497, Train Dice: mode1 0.8097 mode2 0.7901 ,LR: 0.000060
+INFO: Epoch:[037/081], Train Loss: 0.8490 , Sup Loss 0.8490 , Val Loss: 1.1365, Train Dice: mode1 0.8121 mode2 0.7956 ,LR: 0.000060
+INFO: Epoch:[038/081], Train Loss: 0.8478 , Sup Loss 0.8478 , Val Loss: 1.1511, Train Dice: mode1 0.8130 mode2 0.7972 ,LR: 0.000060
+INFO: Epoch:[039/081], Train Loss: 0.8471 , Sup Loss 0.8471 , Val Loss: 1.1532, Train Dice: mode1 0.8144 mode2 0.7958 ,LR: 0.000060
+INFO: valid_dice_m1_3d:0.6950,valid_dice_m2_3d:0.5879
+INFO: Epoch:[040/081], Train Loss: 0.8447 , Sup Loss 0.8447 , Val Loss: 1.1633, Train Dice: mode1 0.8161 mode2 0.8012 ,LR: 0.000060
+INFO: Epoch:[041/081], Train Loss: 0.8438 , Sup Loss 0.8438 , Val Loss: 1.1495, Train Dice: mode1 0.8163 mode2 0.8019 ,LR: 0.000060
+INFO: Epoch:[042/081], Train Loss: 0.8432 , Sup Loss 0.8432 , Val Loss: 1.1493, Train Dice: mode1 0.8149 mode2 0.8035 ,LR: 0.000060
+INFO: Epoch:[043/081], Train Loss: 0.8446 , Sup Loss 0.8446 , Val Loss: 1.1398, Train Dice: mode1 0.8145 mode2 0.8010 ,LR: 0.000006
+INFO: valid_dice_m1_3d:0.6960,valid_dice_m2_3d:0.5791
+INFO: Epoch:[044/081], Train Loss: 0.8403 , Sup Loss 0.8403 , Val Loss: 1.1590, Train Dice: mode1 0.8183 mode2 0.8072 ,LR: 0.000006
+INFO: Epoch:[045/081], Train Loss: 0.8401 , Sup Loss 0.8401 , Val Loss: 1.1597, Train Dice: mode1 0.8186 mode2 0.8083 ,LR: 0.000006
+INFO: Epoch:[046/081], Train Loss: 0.8362 , Sup Loss 0.8362 , Val Loss: 1.1472, Train Dice: mode1 0.8225 mode2 0.8141 ,LR: 0.000006
+INFO: Epoch:[047/081], Train Loss: 0.8392 , Sup Loss 0.8392 , Val Loss: 1.1607, Train Dice: mode1 0.8192 mode2 0.8084 ,LR: 0.000006
+INFO: valid_dice_m1_3d:0.6986,valid_dice_m2_3d:0.5837
+INFO: Epoch:[048/081], Train Loss: 0.8364 , Sup Loss 0.8364 , Val Loss: 1.1598, Train Dice: mode1 0.8226 mode2 0.8121 ,LR: 0.000006
+INFO: Epoch:[049/081], Train Loss: 0.8385 , Sup Loss 0.8385 , Val Loss: 1.1428, Train Dice: mode1 0.8191 mode2 0.8110 ,LR: 0.000006
+INFO: Epoch:[050/081], Train Loss: 0.8366 , Sup Loss 0.8366 , Val Loss: 1.1555, Train Dice: mode1 0.8220 mode2 0.8126 ,LR: 0.000006
+INFO: Epoch:[051/081], Train Loss: 0.8345 , Sup Loss 0.8345 , Val Loss: 1.1530, Train Dice: mode1 0.8239 mode2 0.8159 ,LR: 0.000006
+INFO: valid_dice_m1_3d:0.6966,valid_dice_m2_3d:0.5755
+INFO: Epoch:[052/081], Train Loss: 0.8353 , Sup Loss 0.8353 , Val Loss: 1.1644, Train Dice: mode1 0.8235 mode2 0.8143 ,LR: 0.000006
+INFO: Epoch:[053/081], Train Loss: 0.8356 , Sup Loss 0.8356 , Val Loss: 1.1559, Train Dice: mode1 0.8245 mode2 0.8140 ,LR: 0.000006
+INFO: Epoch:[054/081], Train Loss: 0.8356 , Sup Loss 0.8356 , Val Loss: 1.1423, Train Dice: mode1 0.8223 mode2 0.8149 ,LR: 0.000006
+INFO: Epoch:[055/081], Train Loss: 0.8343 , Sup Loss 0.8343 , Val Loss: 1.1577, Train Dice: mode1 0.8238 mode2 0.8170 ,LR: 0.000001
+INFO: valid_dice_m1_3d:0.7019,valid_dice_m2_3d:0.5764
+INFO: Epoch:[056/081], Train Loss: 0.8347 , Sup Loss 0.8347 , Val Loss: 1.1614, Train Dice: mode1 0.8236 mode2 0.8163 ,LR: 0.000001
+INFO: Epoch:[057/081], Train Loss: 0.8338 , Sup Loss 0.8338 , Val Loss: 1.1528, Train Dice: mode1 0.8234 mode2 0.8177 ,LR: 0.000001
+INFO: Epoch:[058/081], Train Loss: 0.8344 , Sup Loss 0.8344 , Val Loss: 1.1575, Train Dice: mode1 0.8233 mode2 0.8156 ,LR: 0.000001
+INFO: Epoch:[059/081], Train Loss: 0.8354 , Sup Loss 0.8354 , Val Loss: 1.1685, Train Dice: mode1 0.8226 mode2 0.8153 ,LR: 0.000001
+INFO: valid_dice_m1_3d:0.6955,valid_dice_m2_3d:0.5762
+INFO: Epoch:[060/081], Train Loss: 0.8352 , Sup Loss 0.8352 , Val Loss: 1.1675, Train Dice: mode1 0.8218 mode2 0.8160 ,LR: 0.000001
+INFO: Epoch:[061/081], Train Loss: 0.8338 , Sup Loss 0.8338 , Val Loss: 1.1546, Train Dice: mode1 0.8252 mode2 0.8153 ,LR: 0.000001
+INFO: Epoch:[062/081], Train Loss: 0.8347 , Sup Loss 0.8347 , Val Loss: 1.1558, Train Dice: mode1 0.8221 mode2 0.8165 ,LR: 0.000001
+INFO: Epoch:[063/081], Train Loss: 0.8361 , Sup Loss 0.8361 , Val Loss: 1.1600, Train Dice: mode1 0.8207 mode2 0.8130 ,LR: 0.000001
+INFO: valid_dice_m1_3d:0.7086,valid_dice_m2_3d:0.5815
+INFO: Epoch:[064/081], Train Loss: 0.8363 , Sup Loss 0.8363 , Val Loss: 1.1549, Train Dice: mode1 0.8226 mode2 0.8144 ,LR: 0.000001
+INFO: Epoch:[065/081], Train Loss: 0.8351 , Sup Loss 0.8351 , Val Loss: 1.1544, Train Dice: mode1 0.8226 mode2 0.8156 ,LR: 0.000001
+INFO: Epoch:[066/081], Train Loss: 0.8366 , Sup Loss 0.8366 , Val Loss: 1.1507, Train Dice: mode1 0.8215 mode2 0.8137 ,LR: 0.000001
+INFO: Epoch:[067/081], Train Loss: 0.8342 , Sup Loss 0.8342 , Val Loss: 1.1464, Train Dice: mode1 0.8240 mode2 0.8169 ,LR: 0.000001
+INFO: valid_dice_m1_3d:0.6985,valid_dice_m2_3d:0.5775
+INFO: Epoch:[068/081], Train Loss: 0.8344 , Sup Loss 0.8344 , Val Loss: 1.1646, Train Dice: mode1 0.8239 mode2 0.8152 ,LR: 0.000001
+INFO: Epoch:[069/081], Train Loss: 0.8346 , Sup Loss 0.8346 , Val Loss: 1.1578, Train Dice: mode1 0.8228 mode2 0.8166 ,LR: 0.000001
+INFO: Epoch:[070/081], Train Loss: 0.8332 , Sup Loss 0.8332 , Val Loss: 1.1584, Train Dice: mode1 0.8254 mode2 0.8167 ,LR: 0.000001
+INFO: Epoch:[071/081], Train Loss: 0.8352 , Sup Loss 0.8352 , Val Loss: 1.1638, Train Dice: mode1 0.8229 mode2 0.8161 ,LR: 0.000001
+INFO: valid_dice_m1_3d:0.6938,valid_dice_m2_3d:0.5767
+INFO: Epoch:[072/081], Train Loss: 0.8356 , Sup Loss 0.8356 , Val Loss: 1.1671, Train Dice: mode1 0.8206 mode2 0.8162 ,LR: 0.000001
+INFO: Epoch:[073/081], Train Loss: 0.8341 , Sup Loss 0.8341 , Val Loss: 1.1627, Train Dice: mode1 0.8235 mode2 0.8180 ,LR: 0.000001
+INFO: Epoch:[074/081], Train Loss: 0.8354 , Sup Loss 0.8354 , Val Loss: 1.1519, Train Dice: mode1 0.8225 mode2 0.8151 ,LR: 0.000001
+INFO: Epoch:[075/081], Train Loss: 0.8352 , Sup Loss 0.8352 , Val Loss: 1.1437, Train Dice: mode1 0.8231 mode2 0.8159 ,LR: 0.000001
+INFO: valid_dice_m1_3d:0.7020,valid_dice_m2_3d:0.5848
+INFO: Epoch:[076/081], Train Loss: 0.8349 , Sup Loss 0.8349 , Val Loss: 1.1569, Train Dice: mode1 0.8229 mode2 0.8159 ,LR: 0.000001
+INFO: Epoch:[077/081], Train Loss: 0.8366 , Sup Loss 0.8366 , Val Loss: 1.1589, Train Dice: mode1 0.8226 mode2 0.8147 ,LR: 0.000001
+INFO: Epoch:[078/081], Train Loss: 0.8329 , Sup Loss 0.8329 , Val Loss: 1.1540, Train Dice: mode1 0.8242 mode2 0.8174 ,LR: 0.000001
+INFO: Epoch:[079/081], Train Loss: 0.8347 , Sup Loss 0.8347 , Val Loss: 1.1545, Train Dice: mode1 0.8220 mode2 0.8173 ,LR: 0.000001
+INFO: valid_dice_m1_3d:0.6912,valid_dice_m2_3d:0.5732
+INFO: Epoch:[080/081], Train Loss: 0.8335 , Sup Loss 0.8335 , Val Loss: 1.1704, Train Dice: mode1 0.8238 mode2 0.8169 ,LR: 0.000001
+INFO: Model saved !
+INFO: Train finished time: 2025-08-22 21:39:52
+INFO: Time consuming : 14.73 min in train and test
