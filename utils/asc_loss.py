@@ -35,6 +35,7 @@ class ASC_loss(nn.Module):
         if self.sur_siml == 'cos' and self.pHead_sur == 'set_false':
             z_flatten = torch.flatten(z, start_dim=1)
             sim_sur = self.similarity_f(z_flatten.unsqueeze(1), z_flatten.unsqueeze(0))
+        #Default use this
         elif self.sur_siml == 'dice' and self.pHead_sur == 'set_false':
             sim_sur = self.similar_dice(z.unsqueeze(1), z.unsqueeze(0))
         elif self.pHead_sur == 'set_true':

@@ -198,6 +198,7 @@ class Decoder(nn.Module):
         out = self.outc(x)
         return out
 
+
 class CMCNet(nn.Module):
     def __init__(self, in_channels, out_channels,init_feature_num=32, bilinear=False):
         super(CMCNet, self).__init__()
@@ -223,13 +224,19 @@ class CMCNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(1024, 512, kernel_size=1, stride=1, padding=0)
         )
+        
+        self.conv2d_convert_for_forward_mia_no_fuse= nn.Sequential(
+            nn.GroupNorm(16, 512),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(512, 512, kernel_size=1, stride=1, padding=0)
+        )
+        
     def forward_CMC(self, img_mode_1, img_mode_2):
         encoder_feat_mode_1 = self.encoder_1(img_mode_1)
         encoder_feat_mode_2 = self.encoder_2(img_mode_2)
 
         feat_for_CMC_mode_1 = encoder_feat_mode_1[-1]
         feat_for_CMC_mode_2 = encoder_feat_mode_2[-1]
-        
         
         mode_1_F_mia = self.MIA_module_mode_1(feat_for_CMC_mode_1)
         mode_2_F_mia = self.MIA_module_mode_2(feat_for_CMC_mode_2)
@@ -307,7 +314,43 @@ class CMCNet(nn.Module):
     def forward_onlyMIA_with_sigmoid(self, img_mode_1, img_mode_2):
         return self.forward_CMC_with_sigmoid(img_mode_1, img_mode_2)
     
-    
+    def forward_CML(self, img_mode_1, img_mode_2): 
+        encoder_feat_mode_1 = self.encoder_1(img_mode_1)
+        encoder_feat_mode_2 = self.encoder_2(img_mode_2)
+
+        output_mode_1 = self.decoder_1(encoder_feat_mode_1)
+        output_mode_2 = self.decoder_2(encoder_feat_mode_2)
+        
+        return None, None, output_mode_1, output_mode_2
+
+    def forward_bma_only_mode_2(self, img_mode_2): 
+
+        encoder_feat_mode_2 = self.encoder_2(img_mode_2)
+        output_mode_2 = self.decoder_2(encoder_feat_mode_2)
+        
+        return None, None, None, output_mode_2
+
+    def forward_mia_no_fuse(self, img_mode_1, img_mode_2):
+        encoder_feat_mode_1 = self.encoder_1(img_mode_1)
+        encoder_feat_mode_2 = self.encoder_2(img_mode_2)
+
+        feat_for_CMC_mode_1 = encoder_feat_mode_1[-1]
+        feat_for_CMC_mode_2 = encoder_feat_mode_2[-1]
+        
+        mode_1_F_mia = self.MIA_module_mode_1(feat_for_CMC_mode_1)
+        mode_2_F_mia = self.MIA_module_mode_2(feat_for_CMC_mode_2)
+        
+        mode_1_F_z = self.conv2d_convert_for_forward_mia_no_fuse(mode_1_F_mia)
+        mode_2_F_z = self.conv2d_convert_for_forward_mia_no_fuse(mode_2_F_mia)
+
+        encoder_feature_after_CMC_mode_1 = encoder_feat_mode_1[:4] + [mode_1_F_z]
+        encoder_feature_after_CMC_mode_2 = encoder_feat_mode_2[:4] + [mode_2_F_z]
+            
+        mode_1_mask = self.decoder_1(encoder_feature_after_CMC_mode_1)
+        mode_2_mask = self.decoder_2(encoder_feature_after_CMC_mode_2)
+
+        return None, None, mode_1_mask, mode_2_mask
+                
 def sigmoid_rampup(current, rampup_length):
     """Exponential rampup from https://arxiv.org/abs/1610.02242"""
     if rampup_length == 0:
@@ -332,15 +375,17 @@ if __name__ == '__main__':
     # feat = net.encoder_forward(inputs)
     # print(feat[1,:,:].shape)
     cmc = CMCNet(1,1,32)
-    input_mode_1 = torch.rand(2,1,144,144)
-    input_mode_2 = torch.rand(2,1,144,144)
-    mode_1_F_ds, mode_2_F_ds, mode_1_mask, mode_2_mask = cmc(input_mode_1, input_mode_2)
-    # print(input_mode_1)
-    # print(mode_1_F_ds)
-    print(mode_2_F_ds.shape)
-    print(mode_1_mask.shape)
-    print(mode_2_mask.shape)
-    
+    # input_mode_1 = torch.rand(2,1,144,144)
+    # input_mode_2 = torch.rand(2,1,144,144)
+    # mode_1_F_ds, mode_2_F_ds, mode_1_mask, mode_2_mask = cmc(input_mode_1, input_mode_2)
+    # # print(input_mode_1)
+    # # print(mode_1_F_ds)
+    # print(mode_2_F_ds.shape)
+    # print(mode_1_mask.shape)
+    # print(mode_2_mask.shape)
+    encoder_2 = cmc.encoder_2
+    for param in encoder_2.parameters():
+        print(param.shape)
     
     
     

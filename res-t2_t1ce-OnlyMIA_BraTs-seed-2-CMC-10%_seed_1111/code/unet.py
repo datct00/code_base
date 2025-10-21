@@ -5,6 +5,38 @@ import torch
 import torch.nn as nn
 # from torchsummary import summary
 from torch.cuda.amp import autocast
+
+
+class MIA_Module(nn.Module):
+    """ Channel attention module"""
+
+    def __init__(self):
+        super(MIA_Module, self).__init__()
+        self.gamma = nn.Parameter(torch.zeros(1))
+        self.softmax = nn.Softmax(dim=-1)
+
+    def forward(self, x):
+        """
+            inputs :
+                x : input feature maps( B X C X z*y*x)
+            returns :
+                out : attention value + input feature
+                attention: B X C X C
+        """
+        m_batchsize, C, height, width = x.size()
+        proj_query = x.view(m_batchsize, C, -1)
+        proj_key = x.view(m_batchsize, C, -1).permute(0, 2, 1)
+        energy = torch.bmm(proj_query, proj_key)
+        energy_new = torch.max(energy, -1, keepdim=True)[0].expand_as(energy) - energy
+        attention = self.softmax(energy_new)
+        proj_value = x.view(m_batchsize, C, -1)
+
+        out = torch.bmm(attention, proj_value)
+        out = out.view(m_batchsize, C, height, width)
+
+        out = self.gamma * out + x
+        return out
+
 class DoubleConv(nn.Module):
     """(convolution => [BN] => ReLU) * 2"""
     def __init__(self, in_channels, out_channels, mid_channels=None, dropout_p=0.0):
@@ -127,21 +159,27 @@ class UNet(nn.Module):
                   'factor': factor}
         self.encoder = Encoder(params)
         self.decoder = Decoder(params)
+        self.mia_module = MIA_Module()
+        self.conv2d_convert = nn.Sequential(
+            nn.GroupNorm(16, 512),
+            nn.ReLU(inplace=True),
+        )
         
     def forward(self, x):
         feature = self.encoder(x)
         output = self.decoder(feature)
         return torch.sigmoid(output)
+
     
     
     
 if __name__ == '__main__':
     device = torch.device('cpu')  # cuda:0
-    inputs = torch.rand(2, 3, 144, 144,144).to(device)
-    print(inputs[1,:,:,:].shape)
-    # net = UNet(in_channels=1, out_channels=1,init_feature_num=64)
-    # res = net(inputs)
-    # print('res shape:', res.shape)
+    inputs = torch.rand(2, 1, 144,144).to(device)
+    # print(inputs[1,:,:,:].shape)
+    net = UNet(in_channels=1, out_channels=1,init_feature_num=64)
+    res = net.forward_mia_no_fuse(inputs)
+    print('res shape:', res.shape)
     
     # feat = net.encoder_forward(inputs)
     # print(feat[1,:,:].shape)

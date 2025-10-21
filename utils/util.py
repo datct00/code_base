@@ -22,6 +22,25 @@ def plot_dot(m_indx,m_value,num=0,):
     show_max = '[' + str(m_indx) + ',' + str("{:.4f}".format(m_value)) + ']'
     plt.annotate(show_max, xytext=(m_indx, m_value+num), xy=(m_indx, m_value))
 
+
+
+def plot_dice2_without_val(train_c, base_dir, mode):
+    train_x = range(len(train_c))
+    train_y = train_c
+
+    # Plot only training curve
+    plt.plot(train_x, train_y, label='train')
+
+    # Labels and title
+    plt.ylabel(mode + ' value')
+    plt.xlabel('epoch')
+    plt.title("Model " + mode)
+    plt.legend(loc='upper left')
+
+    # Save figure (no dependence on validation metrics anymore)
+    plt.savefig('{}/{}-train_only.jpg'.format(base_dir, mode))
+    plt.close()
+
 def plot_dice2(train_c,valid_c,base_dir,mode,valid_c_3d=[],interval_list=[]):
     train_x = range(len(train_c))
     train_y = train_c

@@ -97,7 +97,7 @@ class TwoStreamBatchSampler(Sampler):
         self.unlabeled_batch_size = unlabeled_batch_size
 
         assert len(self.labeled_idxs) >= self.labeled_batch_size > 0
-        assert len(self.unlabeled_idxs) >= self.unlabeled_batch_size > 0
+        assert len(self.unlabeled_idxs) >= self.unlabeled_batch_size > 0, print(len(self.unlabeled_idxs), self.unlabeled_batch_size)
 
     def __iter__(self):
         if self.shuffle == True:
