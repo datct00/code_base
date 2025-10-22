@@ -787,7 +787,7 @@ def set_argparse():
     #For CMC
     parser.add_argument('--max_epoch', type=int,default=81, 
                         help='maximum epoch')
-    parser.add_argument('--start_fusion_epoch', default=30, type=int)
+    parser.add_argument('--start_fusion_epoch', default=40, type=int)
     parser.add_argument('--will_eval', default=0, type=bool)
     
     parser.add_argument('--batch_size', type=int,default=24,
