@@ -382,10 +382,7 @@ def train_net(start_time,base_dir,data_path,train_list,val_list,device,img_mode=
                 sup_loss = (mode_1_loss + mode_2_loss)/2
                 train_log.add_value({"loss_sup": sup_loss.item()}, n=1)
                 
-                nce_weight = 0.0
-                mse_weight = 1.0
-
-                loss = sup_loss + nce_weight * loss_contrast + mse_weight * loss_mse
+                loss = sup_loss +  loss_mse
                 #======================end for CMC
                 
                 
@@ -648,7 +645,7 @@ def main():
     log_path = os.path.join(base_dir, 'training.log') 
     sys.stdout = Logger(log_path=log_path)
     set_logging(log_path=log_path)
-    set_random_seed(seed_num=1111)
+    set_random_seed(seed_num=args.seed)
     
     """GPU ID"""
     gpu_list = [args.gpu] #[0,1]
@@ -751,8 +748,9 @@ def main():
 def set_argparse():
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=str, default=0)
-    parser.add_argument('--base_dir', type=str,default='res-Loss_OnlyMSE-0.01_CML_Stage_1_MIA_BraTs-seed-2-CMC-10%_seed_1111', 
+    parser.add_argument('--base_dir', type=str,default='res-Loss_OnlyMSE-0.01_CML_Stage_1_MIA_BraTs-seed-2-CMC-10%_seed_254', 
                         help='base dir name')
+    parser.add_argument('--seed', type=int, default=1111)
     parser.add_argument('--train_list', type=str,default='randP1_slice_nidus_train.list', 
                         help='a list of train data')
     parser.add_argument('--val_list', type=str,default='randP1_slice_nidus_val.list', 

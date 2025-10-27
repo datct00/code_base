@@ -48,10 +48,24 @@ class FusionLayer(nn.Module):
         self.layer2 = LUConv(512, 512,act)
         
     def forward(self, x1,x2):
+        # if isinstance(x1, list) or isinstance(x2, list):
+        #     output = []
+        #     for idx in range(x1):
+        #         if x1[idx].shape[2] != x2[idx].shape[2]:
+        #             m_batchsize, C, height, width = x1.size()
+        #             x2 = F.interpolate(x1, size=(height, width), mode='trilinear',
+        #                                     align_corners=True)  
+        #         concat = torch.cat((x1[idx], x2[idx]), 1) 
+        #         cov_layer1 = self.layer1(concat)
+        #         cov_layer2 = self.layer2(cov_layer1)
+        #         out = self.sigmoid(cov_layer2)
+        #         output.append(out)
+        #     return output
+        # else:
         if x1.shape[2] != x2.shape[2]:
             m_batchsize, C, height, width = x1.size()
             x2 = F.interpolate(x1, size=(height, width), mode='trilinear',
-                                     align_corners=True)
+                                    align_corners=True)
         concat = torch.cat((x1,x2),1)
         cov_layer1 = self.layer1(concat)
         cov_layer2 = self.layer2(cov_layer1)
@@ -350,6 +364,57 @@ class CMCNet(nn.Module):
         mode_2_mask = self.decoder_2(encoder_feature_after_CMC_mode_2)
 
         return None, None, mode_1_mask, mode_2_mask
+    
+    def forward_ablation(self, img_mode_1, img_mode_2, mode='baseline'):
+        assert mode in ['baseline','onlymia','onlyfusion']
+        if mode == "baseline":
+            encoder_feat_mode_1 = self.encoder_1(img_mode_1)
+            encoder_feat_mode_2 = self.encoder_2(img_mode_2)
+
+            output_mode_1 = self.decoder_1(encoder_feat_mode_1)
+            output_mode_2 = self.decoder_2(encoder_feat_mode_2)
+            return  None, None,output_mode_1, output_mode_2
+        
+        elif mode == "onlymia": 
+            encoder_feat_mode_1 = self.encoder_1(img_mode_1)
+            encoder_feat_mode_2 = self.encoder_2(img_mode_2)
+
+            feat_for_CMC_mode_1 = encoder_feat_mode_1[-1]
+            feat_for_CMC_mode_2 = encoder_feat_mode_2[-1]
+            
+            mode_1_F_mia = self.MIA_module_mode_1(feat_for_CMC_mode_1)
+            mode_2_F_mia = self.MIA_module_mode_2(feat_for_CMC_mode_2)
+
+            encoder_feature_after_CMC_mode_1 = encoder_feat_mode_1[:4] + [mode_1_F_mia]
+            encoder_feature_after_CMC_mode_2 = encoder_feat_mode_2[:4] + [mode_2_F_mia]
+                
+            mode_1_mask = self.decoder_1(encoder_feature_after_CMC_mode_1)
+            mode_2_mask = self.decoder_2(encoder_feature_after_CMC_mode_2)
+
+            return  None, None, mode_1_mask, mode_2_mask
+        
+        elif mode == "onlyfusion":
+            encoder_feat_mode_1 = self.encoder_1(img_mode_1)
+            encoder_feat_mode_2 = self.encoder_2(img_mode_2)
+
+            feat_for_CMC_mode_1 = encoder_feat_mode_1[-1]
+            feat_for_CMC_mode_2 = encoder_feat_mode_2[-1]
+
+            out_fuse = self.fusion_layer(feat_for_CMC_mode_1, feat_for_CMC_mode_2)
+            
+            mode_1_F_z = torch.cat([out_fuse, feat_for_CMC_mode_1], dim=1)
+            mode_2_F_z = torch.cat([out_fuse, feat_for_CMC_mode_2], dim=1)
+            
+            mode_1_F_z = self.conv2d_convert(mode_1_F_z)
+            mode_2_F_z = self.conv2d_convert(mode_2_F_z)
+
+            encoder_feature_after_CMC_mode_1 = encoder_feat_mode_1[:4] + [mode_1_F_z]
+            encoder_feature_after_CMC_mode_2 = encoder_feat_mode_2[:4] + [mode_2_F_z]
+                
+            mode_1_mask = self.decoder_1(encoder_feature_after_CMC_mode_1)
+            mode_2_mask = self.decoder_2(encoder_feature_after_CMC_mode_2)
+
+            return None, None, mode_1_mask, mode_2_mask
                 
 def sigmoid_rampup(current, rampup_length):
     """Exponential rampup from https://arxiv.org/abs/1610.02242"""

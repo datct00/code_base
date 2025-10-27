@@ -667,7 +667,7 @@ def main():
     log_path = os.path.join(base_dir, 'training.log') 
     sys.stdout = Logger(log_path=log_path)
     set_logging(log_path=log_path)
-    set_random_seed(seed_num=1111)
+    set_random_seed(seed_num=args.seed)
     
     """GPU ID"""
     gpu_list = [args.gpu] #[0,1]
@@ -770,8 +770,9 @@ def main():
 def set_argparse():
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=str, default=0)
-    parser.add_argument('--base_dir', type=str,default='res-BraTs-seed-2-OnlySupCMCNet-100%_seed_1111_2nd', 
+    parser.add_argument('--base_dir', type=str,default='res-BraTs-seed-2-OnlySupCMCNet-100%_seed_254', 
                         help='base dir name')
+    parser.add_argument("--seed", type=int, default=1111)
     parser.add_argument('--train_list', type=str,default='randP1_slice_nidus_train.list', 
                         help='a list of train data')
     parser.add_argument('--val_list', type=str,default='randP1_slice_nidus_val.list', 
@@ -785,7 +786,7 @@ def set_argparse():
     parser.add_argument('--max_epoch', type=int,default=81, 
                         help='maximum epoch')
     parser.add_argument('--start_fusion_epoch', default=82, type=int)
-    parser.add_argument('--will_eval', default=1, type=bool)
+    parser.add_argument('--will_eval', default=0, type=bool)
     
     parser.add_argument('--batch_size', type=int,default=24,
                         help='batch size per gpu')

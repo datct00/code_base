@@ -62,7 +62,7 @@ def predict_img(net,device,true_mask,init_img,scale_factor=1,out_threshold=0.5):
     # step 3/4 : tensor --> features
     time_tic = time.time()
     with torch.no_grad():
-        _,_,mask_pred_mode_1,mask_pred_mode_2 = net.forward_onlyMIA(img_tensor[0], img_tensor[1])
+        _,_,mask_pred_mode_1,mask_pred_mode_2 = net.forward_ablation(img_tensor[0], img_tensor[1],mode=args.ablation_mode)
     if len(mask_pred_mode_1) != 2:
         outputs_mode_1 = mask_pred_mode_1
         outputs_mode_2 = mask_pred_mode_2
@@ -159,7 +159,7 @@ def test_volumes(net,device,img_path,true_path,in_files,out_path=None):
     img_tensor_mode_2 = torch.tensor(test_img_tensor_mode_2).to(device,torch.float32)
     
     with torch.no_grad():
-        _,_,mask_pred_mode_1,mask_pred_mode_2 = net.forward_onlyMIA(img_tensor_mode_1, img_tensor_mode_2)
+        _,_,mask_pred_mode_1,mask_pred_mode_2 = net.forward_ablation(img_tensor_mode_1, img_tensor_mode_2,mode=args.ablation_mode)
         
             
     if len(mask_pred_mode_1) != 2:
@@ -266,24 +266,34 @@ def compute_3d_dice(net,device,img_path_full,true_path_full,in_files_full_list,p
     return mean_dice_all_3d_mode_1, mean_dice_all_3d_mode_2
 
 if __name__ == "__main__":
-
     # logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gpu', type=int, default=0)
+    parser.add_argument('--base_dir', type=str, default='res-t2_t1ce-Ablation-OnlyFusion-Loss_OnlyMSE-0.01_CML_Stage_1_MIA_BraTs-seed-2-CMC-10%_seed_254')
+    parser.add_argument('--img_mode', type=str, default='t2_t1ce') #flair_t1 #t2_t1ce
+    parser.add_argument('--ablation_mode', type=str, default='onlyfusion') #onlymia onlyfusion baseline
+    global args 
+    args = parser.parse_args()
 
-    gpu_list = [0] #[0,1]
+
+
+
+    gpu_list = [args.gpu] #[0,1]
     gpu_list_str = ','.join(map(str, gpu_list))
     os.environ.setdefault("CUDA_VISIBLE_DEVICES", gpu_list_str)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Using device {device}')
 
     """Test master directory """
-    predict_file = 'res-flair_t1-Loss_OnlyMSE-0.01_CML_Stage_1_MIA_BraTs-seed-2-CMC-1%_seed_254'
+    predict_file = args.base_dir
     base_dir = './' + predict_file
-    log_path = os.path.join(base_dir, 'predict_t1.log') 
+    log_path = os.path.join(base_dir, 'predict.log') 
     set_logging(log_path=log_path)
 
     data_path = "A:\Dat\semi-CML-public\dataset\BraTS_slice"
-    img_mode_1 = 'flair' #'t2'
-    img_mode_2 = 't1' #'t1ce'
+    img_mode_1 = args.img_mode.split('_')[0] #'flair' #'t2'
+    img_mode_2 = args.img_mode.split('_')[1] #'t1' #'t1ce'
+
     out_path = os.path.join(base_dir, 'outputs_new') 
     if not os.path.exists(out_path):
         os.makedirs(out_path)

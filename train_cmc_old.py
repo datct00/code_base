@@ -1,3 +1,5 @@
+#test_cmc.py
+
 import os
 import sys
 import time
@@ -30,10 +32,9 @@ from utils.asc_loss import ASC_loss
 from utils.metrics import dice as dice_all
 from utils.metrics import batch_dice,compute_dice
 from utils.losses import BinaryDiceLoss
-from utils.util import set_logging,Logger,read_list,plot_base,plot_dice2,plot_dice2_without_val, AverageMeter
+from utils.util import set_logging,Logger,read_list,plot_base,plot_dice2,AverageMeter
 from dataloader.dataset_multi_semi import MultiSemiDataSets,TwoStreamBatchSampler,PatientBatchSampler
-def worker_init_fn(worker_id):
-        random.seed(1111 + worker_id)
+
 def train_net(start_time,base_dir,data_path,train_list,val_list,device,img_mode='',
             lr_scheduler='warmupMultistep',
             max_epoch=81,
@@ -160,7 +161,8 @@ def train_net(start_time,base_dir,data_path,train_list,val_list,device,img_mode=
     unlabeled_idxs = list(range(labeled_slice, total_slices))
     batch_sampler = TwoStreamBatchSampler(
         labeled_idxs, unlabeled_idxs, batch_size, batch_size-labeled_bs,shuffle=True)
-
+    def worker_init_fn(worker_id):
+        random.seed(1111 + worker_id)
     # train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=16, pin_memory=True, drop_last=True,worker_init_fn=worker_init_fn)
     train_loader = DataLoader(train_dataset,batch_sampler=batch_sampler, num_workers=16, pin_memory=True,worker_init_fn=worker_init_fn)
     val_loader_2d = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=16, pin_memory=True, drop_last=False,worker_init_fn=worker_init_fn)
@@ -688,7 +690,7 @@ def main():
         data_path = "/mnt/HDD2/dat/med/semi-CML-public/dataset/Hecktor_slice" 
         img_h,img_w = 144,144
     else:
-        data_path = "A:\Dat\semi-CML-public\dataset\BraTS_slice" 
+        data_path = "/mnt/HDD2/dat/med/semi-CML-public/dataset/BraTS_slice" 
         img_h,img_w = 160,160
     train_list = 'randP1_slice_nidus_train.list'
     val_list = 'randP1_slice_nidus_val.list'
@@ -762,7 +764,7 @@ def main():
     logging.info('Model saved !')    
 
     """Plot"""
-    plot_dice_loss(train_log,val_log,lr_curve,base_dir,img_mode1,img_mode2, args.will_eval)
+    plot_dice_loss(train_log,val_log,lr_curve,base_dir,img_mode1,img_mode2)
 
     time_toc = time.time()
     time_s = time_toc - time_tic
@@ -772,8 +774,8 @@ def main():
 
 def set_argparse():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--gpu', type=str, default=0)
-    parser.add_argument('--base_dir', type=str,default='res-FullCMC-BraTs-seed-2-CMC-10%_seed_1111', 
+    parser.add_argument('--gpu', type=str, default=7)
+    parser.add_argument('--base_dir', type=str,default='res-FullCMC-BraTs-seed-2-CMC-10%_seed_1111_2nd', 
                         help='base dir name')
     parser.add_argument('--train_list', type=str,default='randP1_slice_nidus_train.list', 
                         help='a list of train data')
@@ -788,7 +790,7 @@ def set_argparse():
     parser.add_argument('--max_epoch', type=int,default=81, 
                         help='maximum epoch')
     parser.add_argument('--start_fusion_epoch', default=30, type=int)
-    parser.add_argument('--will_eval', default=0, type=bool)
+    parser.add_argument('--will_eval', default=1, type=bool)
     
     parser.add_argument('--batch_size', type=int,default=24,
                         help='batch size per gpu')
@@ -859,17 +861,10 @@ def set_random_seed(seed_num):
         torch.manual_seed(seed_num) 
         torch.cuda.manual_seed(seed_num) 
 
-def plot_dice_loss(train_dict,val_dict,lr_curve,base_dir,img_mode1,img_mode2, will_eval):
+def plot_dice_loss(train_dict,val_dict,lr_curve,base_dir,img_mode1,img_mode2):
     # plot dice curve
-    
-    if will_eval:
-        plot_dice2(train_dict['dice_m1'],val_dict['dice_m1'],base_dir,f'Dice_{img_mode1}',val_dict['dice_3d_m1'],val_dict['3d_interval_list'])
-        plot_dice2(train_dict['dice_m2'],val_dict['dice_m2'],base_dir,f'Dice_{img_mode2}',val_dict['dice_3d_m2'],val_dict['3d_interval_list'])
-
-    else:
-        plot_dice2_without_val(train_dict['dice_m1'],base_dir,f'Dice_{img_mode1}')
-        plot_dice2_without_val(train_dict['dice_m2'],base_dir,f'Dice_{img_mode2}')
-
+    plot_dice2(train_dict['dice_m1'],val_dict['dice_m1'],base_dir,f'Dice_{img_mode1}',val_dict['dice_3d_m1'],val_dict['3d_interval_list'])
+    plot_dice2(train_dict['dice_m2'],val_dict['dice_m2'],base_dir,f'Dice_{img_mode2}',val_dict['dice_3d_m2'],val_dict['3d_interval_list'])
     # plot loss curve
     for key in train_dict:
         if 'loss' in key:

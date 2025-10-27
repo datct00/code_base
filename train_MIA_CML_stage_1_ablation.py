@@ -67,6 +67,7 @@ def train_net(start_time,base_dir,data_path,train_list,val_list,device,img_mode=
             teach_m2_WP_epoch=3,
             start_fusion_epoch=350,
             will_eval = False,
+            ablation_mode=None,
             ):
     val_3d_interval = 4 
     local_vars_dict = {}
@@ -300,59 +301,35 @@ def train_net(start_time,base_dir,data_path,train_list,val_list,device,img_mode=
 
                 
                 #For CMC
-                _,_, masks_pred_mode1_sup, masks_pred_mode2_sup = cmc_net.forward_onlyMIA(imgs_mode1[:labeled_bs], imgs_mode2[:labeled_bs])
+                _,_, masks_pred_mode1_sup, masks_pred_mode2_sup = cmc_net.forward_ablation(imgs_mode1[:labeled_bs], imgs_mode2[:labeled_bs],mode=ablation_mode)
 
 
                 # # ================================= end for unsupervised 
 
 
-                # # ================================= start for unsupervised 
-                # # use both MSE and ASC for unlabeled data of modality 1 and modality 2
+                # ================================= start for unsupervised 
+                #Infer on unlabeled data
+                _,_, masks_pred_mode1_unsup, masks_pred_mode2_unsup = cmc_net.forward_ablation(imgs_mode1[labeled_bs:], imgs_mode2[labeled_bs:],mode=ablation_mode)
+                # use both MSE and ASC for unlabeled data of modality 1 and modality 2
                 # if cons_ramp_type != 'none':
                 #     consistency_weight = get_current_consistency_weight(epoch)
                 # else:
                 #     consistency_weight = consistency
                 
-                # #MSE loss
-                # consistency_loss = torch.mean(    
-                #     (masks_pred_mode1[labeled_bs:]-masks_pred_mode2[labeled_bs:])**2) 
+                
+                #MSE loss
+                consistency_loss = torch.mean(    
+                    (masks_pred_mode1_unsup-masks_pred_mode2_unsup)**2) 
 
-                # loss_mse = consistency_weight * consistency_loss
-                # train_log.add_value({"loss_mse": consistency_loss.item()}, n=1)
+                consistency_weight = 0.01
+                loss_mse = consistency_weight * consistency_loss
+                train_log.add_value({"loss_mse": loss_mse.item()}, n=1)
                 
-                # ##ASC Loss
-                # loss_contrast = contrast_loss(masks_pred_mode1[labeled_bs:],masks_pred_mode2[labeled_bs:])
-                # train_log.add_value({"loss_contrast": loss_contrast.item()}, n=1)
-                
-                
-                #Integrate CMC only for unlabeled data
-                if epoch >= start_fusion_epoch: 
-                    with torch.no_grad():
-                        mode_1_img_F_ds, mode_2_img_F_ds, masks_pred_mode1_unsup, masks_pred_mode2_unsup = cmc_net.forward_onlyMIA(imgs_mode1[labeled_bs:], imgs_mode2[labeled_bs:])
-                    
-                    # print("mode1:", mode_1_img_F_ds.mean().item(), mode_1_img_F_ds.std().item())
-                    # print("mode2:", mode_2_img_F_ds.mean().item(), mode_2_img_F_ds.std().item())
-                    # print("csc_loss:", csc_loss.item())
-                    
-                     
-                    # print(mode_1_img_F_ds)
-                    # print(mode_2_img_F_ds)
-                    
-                    
-                    csc_loss = CSC_loss_func(mode_1_img_F_ds, mode_2_img_F_ds)
-                    
-                    cac_loss = CAC_loss_func(masks_pred_mode1_unsup, masks_pred_mode2_unsup)
-                    
-                    ### compute CSC loss
-                    consistency_weight_csc = sigmoid_rampup(epoch, max_epoch)
-                    ### compute CAC loss
-                    consistency_weight_cac = cosine_rampdown(epoch, max_epoch)
-
-                    # print(consistency_weight_csc)
-                    # unsup_loss = consistency_weight_csc * csc_loss + consistency_weight_cac * cac_loss
-                    unsup_loss =  consistency_weight_csc * csc_loss + consistency_weight_cac * cac_loss
-                    
+                ##ASC Loss
+                loss_contrast = contrast_loss(masks_pred_mode1_unsup,masks_pred_mode2_unsup)
+                train_log.add_value({"loss_contrast": loss_contrast.item()}, n=1)
             
+
                 # # ================================= end for unsupervised 
                 
                 
@@ -397,20 +374,16 @@ def train_net(start_time,base_dir,data_path,train_list,val_list,device,img_mode=
                 #     WP2 = get_WP2_weight(epoch)
                 #     loss = loss_teach_m1 + loss_teach_m2 * WP2
                 # # # ===========================end for PReL
-                
-                
-                # ======================start for only sup
-                # loss_sup_all = loss_sup_mode1 + loss_sup_mode2
-                # loss = loss_sup_all
-                #======================end for only sup
+            
                 
                 #======================start for CMC
                 mode_1_loss = dice_CE_loss(masks_pred_mode1_sup, true_masks[:labeled_bs])
                 mode_2_loss = dice_CE_loss(masks_pred_mode2_sup, true_masks[:labeled_bs])
                 
                 sup_loss = (mode_1_loss + mode_2_loss)/2
-            
-                loss = sup_loss + unsup_loss
+                train_log.add_value({"loss_sup": sup_loss.item()}, n=1)
+                
+                loss = sup_loss +  loss_mse
                 #======================end for CMC
                 
                 
@@ -435,7 +408,7 @@ def train_net(start_time,base_dir,data_path,train_list,val_list,device,img_mode=
                 # dice_mode2 = dice_mode2_sum / num
                 
                 #For CMC
-                train_log.add_value({"loss": loss.item(), "Sup_loss": sup_loss.item(), "CSC_loss": csc_loss.item(), "CAC_loss": cac_loss.item()}, n=1)  
+                train_log.add_value({"loss": loss.item()}, n=1)  
                 pred_mode1 = (masks_pred_mode1_sup > 0.5).float()
                 pred_mode2 = (masks_pred_mode2_sup > 0.5).float()
                 dice_mode1_sum,num = batch_dice(pred_mode1.cpu().data, true_masks.cpu()[:labeled_bs])
@@ -451,10 +424,9 @@ def train_net(start_time,base_dir,data_path,train_list,val_list,device,img_mode=
             train_log.updata_avg()
             mean_loss = train_log.res_dict["loss"][epoch]
             #For CMC
-            mean_csc_loss = train_log.res_dict["CSC_loss"][epoch]
-            mean_cac_loss = train_log.res_dict["CAC_loss"][epoch]
-            mean_sup_loss = train_log.res_dict["Sup_loss"][epoch]
-            
+            mean_sup_loss = train_log.res_dict["loss_sup"][epoch]
+            mean_mse_loss = train_log.res_dict["loss_mse"][epoch]
+            mean_asc_loss = train_log.res_dict["loss_contrast"][epoch]
             mean_dice_mode1 = train_log.res_dict["dice_m1"][epoch]
             mean_dice_mode2 = train_log.res_dict["dice_m2"][epoch]
 
@@ -514,9 +486,9 @@ def train_net(start_time,base_dir,data_path,train_list,val_list,device,img_mode=
                             # mask_pred_after_m2 = net_mode2(imgs_after_m2)
 
                             #For CMC
-                            _,_,mask_pred_fore_m1, mask_pred_fore_m2 = cmc_net.forward_onlyMIA(imgs_fore_m1, imgs_fore_m2)
-                            _,_,mask_pred_mid_m1, mask_pred_mid_m2 = cmc_net.forward_onlyMIA(imgs_mid_m1, imgs_mid_m2)
-                            _,_,mask_pred_after_m1, mask_pred_after_m2 = cmc_net.forward_onlyMIA(imgs_after_m1,imgs_after_m2)
+                            _,_,mask_pred_fore_m1, mask_pred_fore_m2 = cmc_net.forward_ablation(imgs_fore_m1, imgs_fore_m2,mode=ablation_mode)
+                            _,_,mask_pred_mid_m1, mask_pred_mid_m2 = cmc_net.forward_ablation(imgs_mid_m1, imgs_mid_m2,mode=ablation_mode)
+                            _,_,mask_pred_after_m1, mask_pred_after_m2 = cmc_net.forward_ablation(imgs_after_m1,imgs_after_m2,mode=ablation_mode)
 
 
                         mask_pred_mode1 = torch.cat([mask_pred_fore_m1, mask_pred_mid_m1, mask_pred_after_m1], dim=0)
@@ -561,7 +533,7 @@ def train_net(start_time,base_dir,data_path,train_list,val_list,device,img_mode=
                             # mask_pred_mode2 = net_mode2(imgs_mode2)
                             
                             #For CMC
-                            _, _,mask_pred_mode1,mask_pred_mode2 = cmc_net.forward_onlyMIA(imgs_mode1,imgs_mode2)
+                            _, _,mask_pred_mode1,mask_pred_mode2 = cmc_net.forward_ablation(imgs_mode1,imgs_mode2,mode=ablation_mode)
                             
                         # 2D dice
                         pred_mode1 = mask_pred_mode1.ge(0.5).float()
@@ -647,12 +619,12 @@ def train_net(start_time,base_dir,data_path,train_list,val_list,device,img_mode=
 
         if will_eval == True:
             logging.info(
-                'Epoch:[{:0>3}/{:0>3}], Train Loss: {:.4f} , Sup Loss {:.4f}, CSC_Loss {:.4f}, CAC_loss {:.4f} , Val Loss: {:.4f}, Train Dice: mode1 {:.4f} mode2 {:.4f} ,LR: {:.6f}'.format(
-                        epoch,max_epoch,         mean_loss,     mean_sup_loss,      mean_csc_loss,    mean_cac_loss, valid_loss_mean,       mean_dice_mode1, mean_dice_mode2, lr_epoch))
+                'Epoch:[{:0>3}/{:0>3}], Train Loss: {:.4f} , Sup Loss {:.4f}, MSE loss: {:.4f}, ASC loss: {:.4f} , Val Loss: {:.4f}, Train Dice: mode1 {:.4f} mode2 {:.4f} ,LR: {:.6f}'.format(
+                        epoch,max_epoch,         mean_loss,     mean_sup_loss,      mean_mse_loss,    mean_asc_loss, valid_loss_mean,       mean_dice_mode1, mean_dice_mode2, lr_epoch))
         else: 
             logging.info(
-                'Epoch:[{:0>3}/{:0>3}], Train Loss: {:.4f} , Sup Loss {:.4f}, CSC_Loss {:.4f}, CAC_loss {:.4f} , Train Dice: mode1 {:.4f} mode2 {:.4f} ,LR: {:.6f}'.format(
-                        epoch,max_epoch,         mean_loss,     mean_sup_loss,      mean_csc_loss,    mean_cac_loss,       mean_dice_mode1, mean_dice_mode2, lr_epoch))
+                'Epoch:[{:0>3}/{:0>3}], Train Loss: {:.4f} , Sup Loss {:.4f}, MSE loss: {:.4f}, ASC loss: {:.4f}, Train Dice: mode1 {:.4f} mode2 {:.4f} ,LR: {:.6f}'.format(
+                        epoch,max_epoch,         mean_loss,     mean_sup_loss,      mean_mse_loss,    mean_asc_loss,  mean_dice_mode1, mean_dice_mode2, lr_epoch))
 
     return train_log.res_dict,val_log.res_dict,lr_curve,cmc_net #,net_mode1,net_mode2
 
@@ -743,7 +715,8 @@ def main():
                                                                     args.m2_alpha,
                                                                     args.teach_m2_WP_epoch,
                                                                     args.start_fusion_epoch,
-                                                                    args.will_eval)
+                                                                    args.will_eval,
+                                                                    args.ablation_mode)
     else:   
         is_leave = True
         train_log,val_log,lr_curve,net_mode1,net_mode2 = train_net(start_time,
@@ -777,9 +750,10 @@ def main():
 def set_argparse():
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=str, default=0)
-    parser.add_argument('--base_dir', type=str,default='res-OnlyMIA_BraTs-seed-2-CMC-10%_seed_254', 
+    parser.add_argument('--base_dir', type=str,default='res-Ablation-Loss_OnlyMSE-0.01_CML_Stage_1_MIA_BraTs-seed-2-CMC-10%_seed_254', 
                         help='base dir name')
     parser.add_argument('--seed', type=int, default=1111)
+    parser.add_argument('--ablation_mode', type=str, default='baseline')
     parser.add_argument('--train_list', type=str,default='randP1_slice_nidus_train.list', 
                         help='a list of train data')
     parser.add_argument('--val_list', type=str,default='randP1_slice_nidus_val.list', 
